@@ -33,13 +33,13 @@ jobs:
           gradle-version: '8.11.1'
 
       - name: Android lint
-        run: gradle -p android lintCustomerRelease lintBusinessRelease
+        run: gradle -p android lintCustomerRelease lintBusinessRelease lintAdminRelease
 
       - name: Build test APKs
-        run: gradle -p android assembleCustomerDebug assembleBusinessDebug
+        run: gradle -p android assembleCustomerDebug assembleBusinessDebug assembleAdminDebug
 
       - name: Build release AABs
-        run: gradle -p android bundleCustomerRelease bundleBusinessRelease
+        run: gradle -p android bundleCustomerRelease bundleBusinessRelease bundleAdminRelease
 
       - name: Upload customer Android artifacts
         uses: actions/upload-artifact@v4
@@ -58,3 +58,12 @@ jobs:
           path: |
             android/app/build/outputs/apk/business/debug/*.apk
             android/app/build/outputs/bundle/businessRelease/*.aab
+
+      - name: Upload admin Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dierb-admin-android
+          if-no-files-found: error
+          path: |
+            android/app/build/outputs/apk/admin/debug/*.apk
+            android/app/build/outputs/bundle/adminRelease/*.aab

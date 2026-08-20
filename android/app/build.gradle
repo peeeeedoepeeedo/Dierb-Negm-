@@ -56,6 +56,13 @@ android {
             manifestPlaceholders.defaultUrl = "https://${productionHost}/business"
             manifestPlaceholders.assetStatements = '[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://' + productionHost + '\"}}]'
         }
+        admin {
+            dimension 'edition'
+            applicationId 'com.dierbonline.admin'
+            manifestPlaceholders.appName = 'ديرب أدمن'
+            manifestPlaceholders.defaultUrl = "https://${productionHost}/admin"
+            manifestPlaceholders.assetStatements = '[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"web","site":"https://' + productionHost + '"}}]'
+        }
     }
 
     buildTypes {

@@ -18,5 +18,15 @@
         "68:93:54:60:69:41:BC:33:FD:07:20:F8:75:15:0B:38:D7:08:04:C7:CD:03:87:17:0E:01:E6:B6:B5:46:FA:8B"
       ]
     }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dierbonline.admin",
+      "sha256_cert_fingerprints": [
+        "68:93:54:60:69:41:BC:33:FD:07:20:F8:75:15:0B:38:D7:08:04:C7:CD:03:87:17:0E:01:E6:B6:B5:46:FA:8B"
+      ]
+    }
   }
 ]
