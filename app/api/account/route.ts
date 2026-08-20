@@ -6,9 +6,7 @@ import { requireApiUser } from "../../lib/authz";
 export async function GET() {
   try {
     const user = await requireApiUser();
-    return Response.json({
-      profile: { id: user.id, email: user.email, fullName: user.fullName, phone: user.phone, avatarKey: user.avatarKey },
-    });
+    return Response.json({ profile: { id: user.id, email: user.email, fullName: user.fullName, phone: user.phone, avatarKey: user.avatarKey } });
   } catch (error) {
     if (error instanceof Response) return error;
     return Response.json({ error: "تعذر تحميل الحساب" }, { status: 500 });
@@ -35,10 +33,10 @@ export async function DELETE() {
   try {
     const user = await requireApiUser();
     const db = getDb();
-    await db.batch([
-      db.update(profiles).set({ status: "deleted", fullName: "حساب محذوف", phone: null, avatarKey: null, updatedAt: new Date() }).where(eq(profiles.id, user.id)),
-      db.update(authSessions).set({ revokedAt: new Date() }).where(eq(authSessions.userId, user.id)),
-    ]);
+    await db.transaction(async (tx) => {
+      await tx.update(profiles).set({ status: "deleted", fullName: "حساب محذوف", phone: null, avatarKey: null, updatedAt: new Date() }).where(eq(profiles.id, user.id));
+      await tx.update(authSessions).set({ revokedAt: new Date() }).where(eq(authSessions.userId, user.id));
+    });
     return Response.json({ ok: true }, { headers: { "set-cookie": "derb_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0" } });
   } catch (error) {
     if (error instanceof Response) return error;
