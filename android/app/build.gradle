@@ -5,7 +5,7 @@ plugins {
 import java.util.Properties
 
 final String productionHost = System.getenv('DIERB_WEB_HOST') ?: 'dierb-negm.vercel.app'
-final String uploadFingerprint = '7B:62:0E:F7:D6:54:BC:B8:88:91:A4:F6:0B:83:8B:D4:19:21:86:A9:77:8D:ED:24:D2:DF:9B:14:0D:E3:10:2A'
+final String uploadFingerprint = '68:93:54:60:69:41:BC:33:FD:07:20:F8:75:15:0B:38:D7:08:04:C7:CD:03:87:17:0E:01:E6:B6:B5:46:FA:8B'
 
 def signingReady = System.getenv('DIERB_KEYSTORE_PATH') &&
         System.getenv('DIERB_KEYSTORE_PASSWORD') &&
