@@ -10,7 +10,7 @@ export async function GET(request:Request){
  const tasks:Promise<unknown>[]=[];
  if(type==="all"||type==="stores"){
   const clauses=[eq(stores.status,"active"),isNull(stores.deletedAt)];if(locationId)clauses.push(eq(stores.locationId,locationId));if(categoryId)clauses.push(eq(stores.categoryId,categoryId));if(q.length>=2)clauses.push(or(ilike(stores.name,pattern),ilike(stores.description,pattern),ilike(stores.address,pattern))!);
-  tasks.push(db.select({id:stores.id,type:sql<string>`'store'`,name:stores.name,subtitle:stores.description,phone:stores.phone,whatsapp:stores.whatsapp,address:stores.address,locationId:stores.locationId,categoryId:stores.categoryId,latitude:stores.latitude,longitude:stores.longitude,verified:stores.verified}).from(stores).where(and(...clauses)).limit(100));
+  tasks.push(db.select({id:stores.id,type:sql<string>`'store'`,slug:stores.slug,name:stores.name,subtitle:stores.description,phone:stores.phone,whatsapp:stores.whatsapp,address:stores.address,locationId:stores.locationId,categoryId:stores.categoryId,latitude:stores.latitude,longitude:stores.longitude,verified:stores.verified}).from(stores).where(and(...clauses)).limit(100));
  }
  if(type==="all"||type==="services"){
   const clauses=[eq(serviceProfiles.status,"active"),isNull(serviceProfiles.deletedAt)];if(locationId)clauses.push(eq(serviceProfiles.locationId,locationId));if(categoryId)clauses.push(eq(serviceProfiles.categoryId,categoryId));if(q.length>=2)clauses.push(or(ilike(serviceProfiles.name,pattern),ilike(serviceProfiles.profession,pattern),ilike(serviceProfiles.description,pattern))!);
