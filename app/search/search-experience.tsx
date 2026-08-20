@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FormEvent,useEffect,useState } from "react";
 type Result={id:string;type:string;title:string;description:string|null};
 const types=[["all","الكل"],["locations","القرى والمناطق"],["stores","المتاجر"],["products","المنتجات"],["services","الخدمات"],["questions","اسأل ديرب"],["listings","الإعلانات والعقارات والسيارات والوظائف"]];
-const hrefFor=(r:Result)=>r.type==="location"?"/directory":r.type==="store"?`/stores/${r.id}`:r.type==="product"?`/products/${r.id}`:r.type==="service"?`/services/${r.id}`:r.type==="question"?`/ask/${r.id}`:r.type==="car"?"/cars":r.type==="property"?"/real-estate":r.type==="job"?"/jobs":"/listings";
+const hrefFor=(r:Result)=>r.type==="location"?"/directory":r.type==="store"?`/store/${r.id}`:r.type==="product"?`/product/${r.id}`:r.type==="service"?`/services/${r.id}`:r.type==="question"?"/ask":r.type==="car"?"/cars":r.type==="property"?"/real-estate":r.type==="job"?"/jobs":"/listings";
 const labelFor=(type:string)=>({location:"منطقة",store:"متجر",product:"منتج",service:"خدمة",question:"سؤال",car:"سيارة",property:"عقار",job:"وظيفة",classified:"إعلان"}[type]||type);
 export function SearchExperience({initialQuery=""}:{initialQuery?:string}){
  const [query,setQuery]=useState(initialQuery),[type,setType]=useState("all"),[rows,setRows]=useState<Result[]>([]),[searched,setSearched]=useState(false),[busy,setBusy]=useState(initialQuery.trim().length>=2),[error,setError]=useState("");
