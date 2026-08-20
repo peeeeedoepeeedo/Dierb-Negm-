@@ -1,0 +1,6 @@
+import { and, eq, isNull } from "drizzle-orm";
+import { getDb } from "../../../db";
+import { addresses } from "../../../db/pg-schema";
+import { requireApiUser } from "../../lib/authz";
+export async function GET(){try{const user=await requireApiUser(),db=getDb();return Response.json({addresses:await db.select().from(addresses).where(and(eq(addresses.userId,user.id),isNull(addresses.deletedAt)))})}catch(e){if(e instanceof Response)return e;return Response.json({error:"تعذر تحميل العناوين"},{status:500})}}
+export async function POST(request:Request){try{const user=await requireApiUser(),body=await request.json() as Record<string,unknown>,label=String(body.label??"").trim(),street=String(body.street??"").trim();if(label.length<2||street.length<5)return Response.json({error:"اسم العنوان والشارع مطلوبان"},{status:400});const db=getDb(),[row]=await db.insert(addresses).values({id:crypto.randomUUID(),userId:user.id,label,street,building:String(body.building??"").trim()||null,floor:String(body.floor??"").trim()||null,apartment:String(body.apartment??"").trim()||null,landmark:String(body.landmark??"").trim()||null,notes:String(body.notes??"").trim()||null}).returning();return Response.json({address:row},{status:201})}catch(e){if(e instanceof Response)return e;return Response.json({error:"تعذر حفظ العنوان"},{status:500})}}

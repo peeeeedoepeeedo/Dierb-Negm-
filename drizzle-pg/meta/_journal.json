@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1787223494651,
+      "tag": "0000_organic_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787223600227,
+      "tag": "0001_brainy_zarek",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787225342172,
+      "tag": "0002_legal_quicksilver",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+import { eq } from "drizzle-orm";
+import { getDb } from "../../../../db";
+import { authCredentials, authSessions, profiles } from "../../../../db/pg-schema";
+import { secureToken, tokenHash, verifyPassword } from "../../../lib/passwords";
+import { sessionCookie } from "../../../lib/session-cookie";
+export async function POST(request:Request){try{const body=await request.json() as {email?:string;password?:string},email=body.email?.trim().toLowerCase()??"",password=body.password??"",db=getDb(),[row]=await db.select({userId:profiles.id,status:profiles.status,hash:authCredentials.passwordHash,salt:authCredentials.passwordSalt,iterations:authCredentials.iterations}).from(profiles).innerJoin(authCredentials,eq(authCredentials.userId,profiles.id)).where(eq(profiles.email,email)).limit(1);if(!row||row.status!=="active"||!await verifyPassword(password,row.salt,row.iterations,row.hash))return Response.json({error:"البريد أو كلمة المرور غير صحيحة"},{status:401});const token=secureToken(),hash=await tokenHash(token);await db.insert(authSessions).values({id:crypto.randomUUID(),userId:row.userId,tokenHash:hash,userAgent:request.headers.get("user-agent"),expiresAt:new Date(Date.now()+30*86400000)});return Response.json({ok:true},{headers:{"set-cookie":sessionCookie(token)}})}catch{return Response.json({error:"تعذر تسجيل الدخول"},{status:500})}}

@@ -1,0 +1,7 @@
+import { env } from "cloudflare:workers";
+const allowed=new Set(["image/jpeg","image/png","image/webp","image/avif"]),maxBytes=5*1024*1024;
+export type UploadArea="avatars"|"stores"|"products"|"community"|"classifieds"|"services"|"ads"|"reviews"|"messages";
+export interface StorageAdapter{put(key:string,bytes:ArrayBuffer,type:string):Promise<void>;remove(key:string):Promise<void>;privateUrl(key:string,expiresInSeconds:number):Promise<string>}
+export function validateImageUpload(file:File){if(!allowed.has(file.type))throw new Response(JSON.stringify({error:"نوع الملف غير مسموح"}),{status:415,headers:{"content-type":"application/json"}});if(file.size<1||file.size>maxBytes)throw new Response(JSON.stringify({error:"حجم الصورة يجب ألا يتجاوز 5MB"}),{status:413,headers:{"content-type":"application/json"}})}
+export function ownedObjectKey(area:UploadArea,userId:string,filename:string){const ext=filename.toLowerCase().match(/\.(jpe?g|png|webp|avif)$/)?.[1];if(!ext)throw new Response(JSON.stringify({error:"امتداد الملف غير مسموح"}),{status:415});return `${area}/${userId}/${crypto.randomUUID()}.${ext.replace("jpeg","jpg")}`}
+export class R2StorageAdapter implements StorageAdapter{private bucket=(env as unknown as {BUCKET:R2Bucket}).BUCKET;async put(key:string,bytes:ArrayBuffer,type:string){await this.bucket.put(key,bytes,{httpMetadata:{contentType:type}})}async remove(key:string){await this.bucket.delete(key)}async privateUrl():Promise<string>{throw new Error("Private object delivery must use an authenticated application route")}}
