@@ -1,0 +1,26 @@
+import { and, desc, eq, isNull } from "drizzle-orm";
+import { getDb } from "../../../db";
+import { listings, profiles } from "../../../db/pg-schema";
+import { requireApiUser } from "../../lib/authz";
+const kinds=["classified","car","property","job"] as const;
+type Kind=typeof kinds[number];
+function safeAttributes(value:string){try{const parsed=JSON.parse(value);return parsed&&typeof parsed==="object"&&!Array.isArray(parsed)?parsed:{};}catch{return {};}}
+
+export async function GET(request:Request){
+  const url=new URL(request.url),kind=url.searchParams.get("kind"),db=getDb();
+  const condition=kind&&kinds.includes(kind as Kind)?and(eq(listings.status,"active"),eq(listings.kind,kind as Kind),isNull(listings.deletedAt)):and(eq(listings.status,"active"),isNull(listings.deletedAt));
+  const rows=await db.select({id:listings.id,kind:listings.kind,title:listings.title,description:listings.description,price:listings.price,phone:listings.phone,featured:listings.featured,createdAt:listings.createdAt,attributesJson:listings.attributesJson,owner:profiles.fullName}).from(listings).innerJoin(profiles,eq(profiles.id,listings.ownerId)).where(condition).orderBy(desc(listings.featured),desc(listings.createdAt)).limit(100);
+  return Response.json({listings:rows.map(({attributesJson,...row})=>({...row,attributes:safeAttributes(attributesJson)}))});
+}
+
+export async function POST(request:Request){
+  try{
+    const user=await requireApiUser(),body=await request.json() as Record<string,unknown>,kind=String(body.kind),title=String(body.title??"").trim(),description=String(body.description??"").trim(),phone=String(body.phone??"").trim();
+    if(!kinds.includes(kind as Kind)||title.length<5||description.length<10||phone.length<8)return Response.json({error:"أكمل بيانات الإعلان بصورة صحيحة"},{status:400});
+    const rawPrice=body.price==null||body.price===""?null:Number(body.price);
+    if(rawPrice!==null&&(!Number.isFinite(rawPrice)||rawPrice<0))return Response.json({error:"السعر غير صالح"},{status:400});
+    const attributes=body.attributes&&typeof body.attributes==="object"&&!Array.isArray(body.attributes)?body.attributes:{};
+    const db=getDb(),[listing]=await db.insert(listings).values({id:crypto.randomUUID(),ownerId:user.id,kind:kind as Kind,title,description,phone,price:rawPrice,status:"pending",attributesJson:JSON.stringify(attributes)}).returning();
+    return Response.json({listing,message:"تم الإرسال للمراجعة"},{status:201});
+  }catch(e){if(e instanceof Response)return e;return Response.json({error:"تعذر إنشاء الإعلان"},{status:500});}
+}

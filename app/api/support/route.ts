@@ -1,0 +1,33 @@
+import { and, desc, eq, or } from "drizzle-orm";
+import { getDb } from "../../../db";
+import { supportMessages, supportTickets, userRoles } from "../../../db/pg-schema";
+import { requireApiUser } from "../../lib/authz";
+
+export async function GET(request:Request){try{const user=await requireApiUser(),db=getDb(),roles=await db.select({role:userRoles.role}).from(userRoles).where(eq(userRoles.userId,user.id)),staff=roles.some(r=>["admin","super_admin","staff"].includes(r.role)),ticketId=new URL(request.url).searchParams.get("ticketId");if(ticketId){const access=await db.select({id:supportTickets.id}).from(supportTickets).where(and(eq(supportTickets.id,ticketId),staff?or(eq(supportTickets.assignedAdminId,user.id),eq(supportTickets.requesterId,user.id)):eq(supportTickets.requesterId,user.id))).limit(1);if(!access.length)return Response.json({error:"لا تملك هذه التذكرة"},{status:403});const messages=await db.select().from(supportMessages).where(eq(supportMessages.ticketId,ticketId)).orderBy(supportMessages.createdAt).limit(500);return Response.json({messages})}const rows=await db.select().from(supportTickets).where(staff?or(eq(supportTickets.assignedAdminId,user.id),eq(supportTickets.requesterId,user.id)):eq(supportTickets.requesterId,user.id)).orderBy(desc(supportTickets.updatedAt)).limit(100);return Response.json({tickets:rows})}catch(e){if(e instanceof Response)return e;return Response.json({error:"تعذر تحميل التذاكر"},{status:500})}}
+
+export async function POST(request:Request){
+  try{
+    const user=await requireApiUser(),body=await request.json() as {subject?:string;message?:string;priority?:"low"|"normal"|"high"|"urgent"},subject=body.subject?.trim()??"",message=body.message?.trim()??"";
+    if(subject.length<5||message.length<5)return Response.json({error:"اكتب الموضوع والتفاصيل"},{status:400});
+    const db=getDb(),id=crypto.randomUUID();
+    await db.transaction(async(tx)=>{
+      await tx.insert(supportTickets).values({id,requesterId:user.id,subject,priority:body.priority??"normal"});
+      await tx.insert(supportMessages).values({id:crypto.randomUUID(),ticketId:id,senderId:user.id,body:message});
+    });
+    return Response.json({ticketId:id},{status:201});
+  }catch(e){if(e instanceof Response)return e;return Response.json({error:"تعذر فتح التذكرة"},{status:500})}
+}
+
+export async function PUT(request:Request){
+  try{
+    const user=await requireApiUser(),body=await request.json() as {ticketId?:string;message?:string},message=body.message?.trim()??"";
+    if(!body.ticketId||message.length<1)return Response.json({error:"رسالة غير صالحة"},{status:400});
+    const db=getDb(),access=await db.select({id:supportTickets.id}).from(supportTickets).where(and(eq(supportTickets.id,body.ticketId),or(eq(supportTickets.requesterId,user.id),eq(supportTickets.assignedAdminId,user.id)))).limit(1);
+    if(!access.length)return Response.json({error:"لا تملك هذه التذكرة"},{status:403});
+    await db.transaction(async(tx)=>{
+      await tx.insert(supportMessages).values({id:crypto.randomUUID(),ticketId:body.ticketId!,senderId:user.id,body:message});
+      await tx.update(supportTickets).set({status:"open",updatedAt:new Date()}).where(eq(supportTickets.id,body.ticketId!));
+    });
+    return Response.json({ok:true});
+  }catch(e){if(e instanceof Response)return e;return Response.json({error:"تعذر إرسال الرسالة"},{status:500})}
+}

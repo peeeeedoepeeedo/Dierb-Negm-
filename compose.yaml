@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: derb
+      POSTGRES_USER: derb
+      POSTGRES_PASSWORD: derb_dev_only
+    ports:
+      - "5432:5432"
+    volumes:
+      - derb_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U derb -d derb"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+volumes:
+  derb_postgres_data:

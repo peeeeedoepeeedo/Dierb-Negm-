@@ -1,0 +1,95 @@
+plugins {
+    id 'com.android.application'
+}
+
+import java.util.Properties
+
+final String productionHost = System.getenv('DIERB_WEB_HOST') ?: 'dierb-negm.vercel.app'
+final String uploadFingerprint = '68:93:54:60:69:41:BC:33:FD:07:20:F8:75:15:0B:38:D7:08:04:C7:CD:03:87:17:0E:01:E6:B6:B5:46:FA:8B'
+
+def signingReady = System.getenv('DIERB_KEYSTORE_PATH') &&
+        System.getenv('DIERB_KEYSTORE_PASSWORD') &&
+        System.getenv('DIERB_KEY_ALIAS') &&
+        System.getenv('DIERB_KEY_PASSWORD')
+
+android {
+    namespace 'com.dierbonline.shell'
+    compileSdk 36
+
+    defaultConfig {
+        minSdk 23
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+        manifestPlaceholders = [
+                hostName: productionHost,
+                defaultUrl: "https://${productionHost}/",
+                appName: 'ديرب أونلاين',
+                assetStatements: '[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://' + productionHost + '\"}}]'
+        ]
+    }
+
+    signingConfigs {
+        if (signingReady) {
+            release {
+                storeFile file(System.getenv('DIERB_KEYSTORE_PATH'))
+                storePassword System.getenv('DIERB_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('DIERB_KEY_ALIAS')
+                keyPassword System.getenv('DIERB_KEY_PASSWORD')
+            }
+        }
+    }
+
+    flavorDimensions += 'edition'
+    productFlavors {
+        customer {
+            dimension 'edition'
+            applicationId 'com.dierbonline.app'
+            manifestPlaceholders.appName = 'ديرب أونلاين'
+            manifestPlaceholders.defaultUrl = "https://${productionHost}/"
+            manifestPlaceholders.assetStatements = '[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://' + productionHost + '\"}}]'
+        }
+        business {
+            dimension 'edition'
+            applicationId 'com.dierbonline.business'
+            manifestPlaceholders.appName = 'ديرب بيزنس'
+            manifestPlaceholders.defaultUrl = "https://${productionHost}/business"
+            manifestPlaceholders.assetStatements = '[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://' + productionHost + '\"}}]'
+        }
+        admin {
+            dimension 'edition'
+            applicationId 'com.dierbonline.admin'
+            manifestPlaceholders.appName = 'ديرب أدمن'
+            manifestPlaceholders.defaultUrl = "https://${productionHost}/admin"
+            manifestPlaceholders.assetStatements = '[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"web","site":"https://' + productionHost + '"}}]'
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            if (signingReady) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds true
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.3'
+}

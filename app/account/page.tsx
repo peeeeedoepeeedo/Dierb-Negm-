@@ -1,0 +1,5 @@
+import Link from "next/link";
+import { requireChatGPTUser } from "../chatgpt-auth";
+import { AccountSettings } from "./settings";
+import { AddressManager } from "./address-manager";
+export default async function AccountPage(){await requireChatGPTUser("/account");return <main className="market-page"><header><Link className="brand" href="/"><span className="brand-mark">د</span><span><strong>حسابي</strong><small>ديرب أونلاين</small></span></Link><Link className="ghost" href="/">الرئيسية</Link></header><section className="account-hub"><div><span className="kicker">كل حسابك</span><h1>مركز حسابي</h1><p>بياناتك، عناوينك، طلباتك، رسائلك ودعمك في مكان واحد.</p></div><nav className="account-shortcuts"><Link href="/orders">📦<b>طلباتي</b><small>الحالة والتفاصيل</small></Link><Link href="/messages">💬<b>الرسائل</b><small>محادثاتك</small></Link><Link href="/notifications">🔔<b>الإشعارات</b><small>آخر التحديثات</small></Link><Link href="/support">🎧<b>الدعم</b><small>تذاكر المساعدة</small></Link><Link href="/business">🏪<b>ديرب بيزنس</b><small>نشاطك وخدماتك</small></Link></nav></section><div className="account-grid"><AccountSettings/><AddressManager/></div></main>}
