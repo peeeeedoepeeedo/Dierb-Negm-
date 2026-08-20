@@ -5,6 +5,5 @@
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:statusBarColor">@color/dierb_primary</item>
         <item name="android:navigationBarColor">@color/dierb_background</item>
-        <item name="android:windowLightNavigationBar">true</item>
     </style>
 </resources>
