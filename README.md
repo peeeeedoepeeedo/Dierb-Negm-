@@ -4,12 +4,12 @@
 
 ## Architecture
 
-- UI: Next.js/Vinext + React، عربية RTL وResponsive.
+- UI: Next.js + React على Vercel، عربية RTL وResponsive.
 - Backend: Route Handlers داخل `app/api` مع Validation وAuthorization على الخادم.
-- Data access: Drizzle ORM. مسار Worker يستخدم Neon HTTP، ومسار Node القياسي في `db/node.ts` يقبل أي `postgresql://` ويدعم pooling وtransactions.
+- Data access: Drizzle ORM عبر Node server runtime في `db/node.ts`، يقبل اتصال Neon/PostgreSQL pooled ويدعم المعاملات الحقيقية.
 - Database: PostgreSQL، والمخطط في `db/pg-schema.ts` والترحيلات في `drizzle-pg/`.
 - Authentication: حسابات محلية، PBKDF2-SHA256، جلسات Server-side، وHttpOnly/SameSite cookies. لا يعتمد Runtime على Supabase أو SIWC.
-- Storage: R2 حاليًا، مع اتجاه Adapter-based لـS3-compatible storage. لا يمر مفتاح التخزين إلى Browser.
+- Storage: S3-compatible adapter مع روابط خاصة موقعة وفحص MIME والحجم والامتداد والملكية. لا يمر أي مفتاح تخزين إلى Browser.
 
 ## Environment
 
@@ -58,9 +58,9 @@ npm run build
 
 ## External providers
 
-- PostgreSQL قياسي عبر `DATABASE_URL`، مع HTTP adapter منفصل لبيئة Worker.
-- مزود S3-compatible عند تفعيل Storage adapter الخارجي.
+- Neon PostgreSQL عبر `DATABASE_URL` على الخادم فقط.
+- مزود S3-compatible عند تفعيل رفع الملفات في الإنتاج.
 - Email provider لإرسال Reset Password والتنبيهات البريدية.
 - Payment provider عند التعاقد؛ لا يوجد Fake Payment.
 
-المشروع في مرحلة ما قبل الإصدار فقط. لا تنشئ Production Tag أو Final Deployment قبل الأمر الصريح بالإصدار النهائي.
+إصدار الويب وAndroid يمران عبر GitHub Actions بعد نجاح بوابات الجودة، ولا تُحفظ أسرار الإنتاج أو مفاتيح التوقيع داخل Git.

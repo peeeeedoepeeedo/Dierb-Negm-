@@ -4,9 +4,9 @@ import "./modules.css";
 import "./checkout-enhancements.css";
 
 export const metadata: Metadata = {
-  title: "ديرب نجم — كل بلدك في موبايلك",
-  description: "دليل ديرب نجم المحلي للمتاجر والمطاعم والصيدليات والأطباء والخدمات والعروض.",
-  applicationName: "ديرب",
+  title: "ديرب أونلاين — كل بلدك في موبايلك",
+  description: "ديرب أونلاين: دليل ديرب نجم المحلي للمتاجر والمنتجات والخدمات والمجتمع والإعلانات.",
+  applicationName: "ديرب أونلاين",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
