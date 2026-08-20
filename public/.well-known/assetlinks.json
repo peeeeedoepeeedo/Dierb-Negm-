@@ -1,0 +1,22 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dierbonline.app",
+      "sha256_cert_fingerprints": [
+        "7B:62:0E:F7:D6:54:BC:B8:88:91:A4:F6:0B:83:8B:D4:19:21:86:A9:77:8D:ED:24:D2:DF:9B:14:0D:E3:10:2A"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dierbonline.business",
+      "sha256_cert_fingerprints": [
+        "7B:62:0E:F7:D6:54:BC:B8:88:91:A4:F6:0B:83:8B:D4:19:21:86:A9:77:8D:ED:24:D2:DF:9B:14:0D:E3:10:2A"
+      ]
+    }
+  }
+]
