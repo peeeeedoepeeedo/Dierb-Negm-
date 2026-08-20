@@ -6,7 +6,7 @@ import { requireApiUser } from "../../../lib/authz";
 export async function GET(request:Request){
  const postId=new URL(request.url).searchParams.get("postId")?.trim();
  if(!postId)return Response.json({error:"المنشور مطلوب"},{status:400});
- const rows=await getDb().select({id:communityComments.id,body:communityComments.body,authorId:communityComments.authorId,author:profiles.fullName,createdAt:communityComments.createdAt}).from(communityComments).innerJoin(profiles,eq(profiles.id,communityComments.authorId)).where(and(eq(communityComments.postId,postId),eq(communityComments.status,"published"),isNull(communityComments.deletedAt))).orderBy(asc(communityComments.createdAt)).limit(200);
+ const rows=await getDb().select({id:communityComments.id,body:communityComments.body,authorId:communityComments.authorId,author:profiles.fullName,createdAt:communityComments.createdAt}).from(communityComments).innerJoin(communityPosts,and(eq(communityPosts.id,communityComments.postId),eq(communityPosts.status,"published"),isNull(communityPosts.deletedAt))).innerJoin(profiles,eq(profiles.id,communityComments.authorId)).where(and(eq(communityComments.postId,postId),eq(communityComments.status,"published"),isNull(communityComments.deletedAt))).orderBy(asc(communityComments.createdAt)).limit(200);
  return Response.json({comments:rows});
 }
 
