@@ -3,4 +3,22 @@ import { getDb } from "../../../../db";
 import { authCredentials, authSessions, profiles, userRoles } from "../../../../db/pg-schema";
 import { hashPassword, secureToken, tokenHash } from "../../../lib/passwords";
 import { sessionCookie } from "../../../lib/session-cookie";
-export async function POST(request:Request){try{const body=await request.json() as {email?:string;password?:string;fullName?:string},email=body.email?.trim().toLowerCase()??"",password=body.password??"",fullName=body.fullName?.trim()??"";if(!/^\S+@\S+\.\S+$/.test(email)||password.length<10||fullName.length<2)return Response.json({error:"أدخل اسمًا وبريدًا صحيحًا وكلمة مرور من 10 أحرف على الأقل"},{status:400});const db=getDb(),exists=await db.select({id:profiles.id}).from(profiles).where(eq(profiles.email,email)).limit(1);if(exists.length)return Response.json({error:"البريد مستخدم بالفعل"},{status:409});const userId=crypto.randomUUID(),credential=await hashPassword(password),token=secureToken(),hash=await tokenHash(token),expiresAt=new Date(Date.now()+30*86400000);await db.batch([db.insert(profiles).values({id:userId,email,fullName,status:"active"}),db.insert(userRoles).values({id:crypto.randomUUID(),userId,role:"customer"}),db.insert(authCredentials).values({id:crypto.randomUUID(),userId,passwordHash:credential.hash,passwordSalt:credential.salt,iterations:credential.iterations}),db.insert(authSessions).values({id:crypto.randomUUID(),userId,tokenHash:hash,userAgent:request.headers.get("user-agent"),expiresAt})]);return Response.json({ok:true},{status:201,headers:{"set-cookie":sessionCookie(token)}})}catch{return Response.json({error:"تعذر إنشاء الحساب"},{status:500})}}
+
+export async function POST(request:Request){
+  try{
+    const body=await request.json() as {email?:string;password?:string;fullName?:string};
+    const email=body.email?.trim().toLowerCase()??"",password=body.password??"",fullName=body.fullName?.trim()??"";
+    if(!/^\S+@\S+\.\S+$/.test(email)||password.length<10||fullName.length<2)return Response.json({error:"أدخل اسمًا وبريدًا صحيحًا وكلمة مرور من 10 أحرف على الأقل"},{status:400});
+    const db=getDb();
+    const exists=await db.select({id:profiles.id}).from(profiles).where(eq(profiles.email,email)).limit(1);
+    if(exists.length)return Response.json({error:"البريد مستخدم بالفعل"},{status:409});
+    const userId=crypto.randomUUID(),credential=await hashPassword(password),token=secureToken(),hash=await tokenHash(token),expiresAt=new Date(Date.now()+30*86400000);
+    await db.transaction(async(tx)=>{
+      await tx.insert(profiles).values({id:userId,email,fullName,status:"active"});
+      await tx.insert(userRoles).values({id:crypto.randomUUID(),userId,role:"customer"});
+      await tx.insert(authCredentials).values({id:crypto.randomUUID(),userId,passwordHash:credential.hash,passwordSalt:credential.salt,iterations:credential.iterations});
+      await tx.insert(authSessions).values({id:crypto.randomUUID(),userId,tokenHash:hash,userAgent:request.headers.get("user-agent"),expiresAt});
+    });
+    return Response.json({ok:true},{status:201,headers:{"set-cookie":sessionCookie(token)}});
+  }catch{return Response.json({error:"تعذر إنشاء الحساب"},{status:500})}
+}
