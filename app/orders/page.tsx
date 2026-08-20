@@ -1,0 +1,9 @@
+import Link from "next/link";
+import { desc,eq,sql } from "drizzle-orm";
+import { getDb } from "../../db";
+import { orderItems,orders,stores } from "../../db/pg-schema";
+import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireApiUser } from "../lib/authz";
+export const dynamic="force-dynamic";
+const labels:Record<string,string>={pending:"جديد",confirmed:"تم التأكيد",preparing:"جارٍ التجهيز",ready:"جاهز",out_for_delivery:"خرج للتوصيل",delivered:"تم التسليم",cancelled:"ملغي",rejected:"مرفوض",refunded:"مسترد"};
+export default async function OrdersPage(){await requireChatGPTUser("/orders");const user=await requireApiUser(),db=getDb();const rows=await db.select({id:orders.id,orderNumber:orders.orderNumber,status:orders.status,total:orders.total,createdAt:orders.createdAt,storeName:stores.name,itemCount:sql<number>`count(${orderItems.id})`}).from(orders).innerJoin(stores,eq(stores.id,orders.storeId)).leftJoin(orderItems,eq(orderItems.orderId,orders.id)).where(eq(orders.customerId,user.id)).groupBy(orders.id,stores.name).orderBy(desc(orders.createdAt)).limit(100);return <main className="market-page"><header><Link className="brand" href="/"><span className="brand-mark">د</span><strong>طلباتي</strong></Link><Link className="ghost" href="/account">حسابي</Link></header><section><span className="kicker">سجل الشراء</span><h1>طلباتي من ديرب</h1><p>تابع حالة كل طلب وافتح التفاصيل والأصناف.</p><div className="data-table order-history">{rows.length===0?<div className="empty"><span>📦</span><h3>لسه معملتش طلبات</h3><Link className="primary" href="/market">افتح السوق</Link></div>:rows.map(o=><Link href={`/orders/${o.id}`} key={o.id}><article><div><b>{o.orderNumber}</b><small>{o.storeName} · {Number(o.itemCount)} صنف · {new Date(o.createdAt).toLocaleString("ar-EG")}</small></div><div><strong>{o.total.toLocaleString("ar-EG")} ج</strong><span className="status-pill">{labels[o.status]||o.status}</span></div></article></Link>)}</div></section></main>}
