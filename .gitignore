@@ -20,6 +20,9 @@
 # misc
 .DS_Store
 *.pem
+*.jks
+*.keystore
+key.properties
 
 # debug
 npm-debug.log*
@@ -33,6 +36,12 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# android generated/signing
+/android/.gradle/
+/android/local.properties
+/android/app/build/
+/android/build/
 
 # typescript
 next-env.d.ts
