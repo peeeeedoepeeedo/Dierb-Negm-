@@ -1,0 +1,54 @@
+name: Production Smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for production deployment and verify critical routes
+        env:
+          BASE_URL: https://dierb-negm.vercel.app
+        run: |
+          set -euo pipefail
+          check() {
+            local path="$1"
+            for i in $(seq 1 30); do
+              code=$(curl -L -sS -o /tmp/body -w '%{http_code}' --max-time 20 "$BASE_URL$path" || true)
+              if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+                echo "$path -> $code"
+                return 0
+              fi
+              echo "$path -> $code (attempt $i/30)"
+              sleep 10
+            done
+            echo "Production route failed: $path"
+            cat /tmp/body || true
+            return 1
+          }
+          check /
+          check /register
+          check /api/health
+          check /.well-known/assetlinks.json
+
+      - name: Publish production smoke status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          RESULT: ${{ job.status }}
+        run: |
+          if [ "$RESULT" = "success" ]; then state=success; description='Production routes and health are reachable'; else state=failure; description='Production smoke test failed'; fi
+          curl -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${SHA}" \
+            -d "{\"state\":\"${state}\",\"context\":\"Production Smoke\",\"description\":\"${description}\"}"
