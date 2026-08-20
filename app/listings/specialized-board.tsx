@@ -1,45 +1,21 @@
 "use client";
 import { FormEvent,useCallback,useEffect,useMemo,useState } from "react";
+import styles from "./specialized-board.module.css";
 
 type Kind="car"|"property"|"job";
 type Attrs=Record<string,string|number|boolean|null>;
 type Listing={id:string;kind:Kind;title:string;description:string;price:number|null;phone:string;owner:string|null;featured:boolean;createdAt:string;attributes:Attrs};
 type Field={key:string;label:string;type?:"text"|"number"|"select";options?:string[];placeholder?:string};
 const config:Record<Kind,{title:string;subtitle:string;icon:string;priceLabel:string;fields:Field[]}>={
- car:{title:"سيارات ديرب",subtitle:"بيع وشراء السيارات والموتوسيكلات من أهل ديرب",icon:"🚗",priceLabel:"السعر",fields:[
-  {key:"brand",label:"الماركة",placeholder:"مثال: شيفروليه"},{key:"model",label:"الموديل",placeholder:"مثال: أوبترا"},{key:"year",label:"سنة الصنع",type:"number"},{key:"mileage",label:"الكيلومترات",type:"number"},{key:"transmission",label:"الفتيس",type:"select",options:["أوتوماتيك","مانيوال"]},{key:"fuel",label:"الوقود",type:"select",options:["بنزين","غاز","ديزل","كهرباء","هجين"]}]},
- property:{title:"عقارات ديرب",subtitle:"شقق ومحلات وأراضٍ للبيع والإيجار داخل ديرب نجم وقراها",icon:"🏠",priceLabel:"السعر",fields:[
-  {key:"purpose",label:"نوع العملية",type:"select",options:["بيع","إيجار"]},{key:"propertyType",label:"نوع العقار",type:"select",options:["شقة","منزل","محل","مكتب","أرض","مخزن","مصنع"]},{key:"area",label:"المساحة بالمتر",type:"number"},{key:"rooms",label:"عدد الغرف",type:"number"},{key:"floor",label:"الدور"},{key:"location",label:"المنطقة/القرية",placeholder:"مثال: ديرب البلد"}]},
- job:{title:"وظائف ديرب",subtitle:"فرص عمل محلية لأهل ديرب وأصحاب الأنشطة",icon:"💼",priceLabel:"الراتب",fields:[
-  {key:"company",label:"اسم جهة العمل"},{key:"employmentType",label:"نوع الدوام",type:"select",options:["دوام كامل","دوام جزئي","وردية","مؤقت","عن بُعد"]},{key:"experience",label:"الخبرة المطلوبة"},{key:"salaryType",label:"نوع الراتب",type:"select",options:["شهري","يومي","بالساعة","حسب الاتفاق"]},{key:"location",label:"مكان العمل",placeholder:"ديرب نجم / القرية"},{key:"applyMethod",label:"طريقة التقديم",type:"select",options:["اتصال","واتساب","رسالة على ديرب"]}]}
+ car:{title:"سيارات ديرب",subtitle:"بيع وشراء السيارات والموتوسيكلات من أهل ديرب",icon:"🚗",priceLabel:"السعر",fields:[{key:"brand",label:"الماركة",placeholder:"مثال: شيفروليه"},{key:"model",label:"الموديل",placeholder:"مثال: أوبترا"},{key:"year",label:"سنة الصنع",type:"number"},{key:"mileage",label:"الكيلومترات",type:"number"},{key:"transmission",label:"الفتيس",type:"select",options:["أوتوماتيك","مانيوال"]},{key:"fuel",label:"الوقود",type:"select",options:["بنزين","غاز","ديزل","كهرباء","هجين"]}]},
+ property:{title:"عقارات ديرب",subtitle:"شقق ومحلات وأراضٍ للبيع والإيجار داخل ديرب نجم وقراها",icon:"🏠",priceLabel:"السعر",fields:[{key:"purpose",label:"نوع العملية",type:"select",options:["بيع","إيجار"]},{key:"propertyType",label:"نوع العقار",type:"select",options:["شقة","منزل","محل","مكتب","أرض","مخزن","مصنع"]},{key:"area",label:"المساحة بالمتر",type:"number"},{key:"rooms",label:"عدد الغرف",type:"number"},{key:"floor",label:"الدور"},{key:"location",label:"المنطقة/القرية",placeholder:"مثال: ديرب البلد"}]},
+ job:{title:"وظائف ديرب",subtitle:"فرص عمل محلية لأهل ديرب وأصحاب الأنشطة",icon:"💼",priceLabel:"الراتب",fields:[{key:"company",label:"اسم جهة العمل"},{key:"employmentType",label:"نوع الدوام",type:"select",options:["دوام كامل","دوام جزئي","وردية","مؤقت","عن بُعد"]},{key:"experience",label:"الخبرة المطلوبة"},{key:"salaryType",label:"نوع الراتب",type:"select",options:["شهري","يومي","بالساعة","حسب الاتفاق"]},{key:"location",label:"مكان العمل",placeholder:"ديرب نجم / القرية"},{key:"applyMethod",label:"طريقة التقديم",type:"select",options:["اتصال","واتساب","رسالة على ديرب"]}]}
 };
-
 function value(attrs:Attrs,key:string){const v=attrs[key];return v==null?"":String(v)}
-
 export function SpecializedListingsBoard({kind}:{kind:Kind}){
- const cfg=config[kind];
- const [rows,setRows]=useState<Listing[]>([]),[query,setQuery]=useState(""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
- const load=useCallback(async()=>{const r=await fetch(`/api/listings?kind=${kind}`);if(r.ok)setRows((await r.json()).listings)},[kind]);
- useEffect(()=>{void load()},[load]);
+ const cfg=config[kind];const [rows,setRows]=useState<Listing[]>([]),[query,setQuery]=useState(""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const load=useCallback(async()=>{const r=await fetch(`/api/listings?kind=${kind}`);if(r.ok)setRows((await r.json()).listings)},[kind]);useEffect(()=>{void load()},[load]);
  const filtered=useMemo(()=>{const q=query.trim().toLocaleLowerCase("ar");if(!q)return rows;return rows.filter(x=>[x.title,x.description,x.owner,...Object.values(x.attributes).map(v=>String(v??""))].join(" ").toLocaleLowerCase("ar").includes(q))},[query,rows]);
- async function submit(e:FormEvent<HTMLFormElement>){
-  e.preventDefault();setBusy(true);setMessage("");const form=e.currentTarget,fd=new FormData(form),attributes:Object.fromEntries(cfg.fields.map(f=>[f.key,String(fd.get(`attr_${f.key}`)??"").trim()]));
-  const payload={kind,title:String(fd.get("title")??""),description:String(fd.get("description")??""),price:String(fd.get("price")??""),phone:String(fd.get("phone")??""),attributes};
-  const r=await fetch("/api/listings",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)}),data=await r.json();setMessage(r.ok?"تم إرسال الإعلان للإدارة للمراجعة.":data.error||"تعذر إرسال الإعلان");if(r.ok)form.reset();setBusy(false);
- }
- return <>
-  <section className="vertical-hero"><span>{cfg.icon}</span><div><small>ديرب أونلاين</small><h1>{cfg.title}</h1><p>{cfg.subtitle}</p></div></section>
-  <div className="vertical-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={`ابحث داخل ${cfg.title}...`}/><b>{filtered.length} إعلان منشور</b></div>
-  <div className="content-split vertical-layout">
-   <section className="social-compose"><h2>أضف إعلانًا جديدًا</h2><p>الإعلان لن يظهر للعامة إلا بعد مراجعة الإدارة.</p><form onSubmit={submit}>
-    <input name="title" required minLength={5} maxLength={160} placeholder="عنوان واضح للإعلان"/>
-    <textarea name="description" required minLength={10} maxLength={3000} placeholder="اكتب التفاصيل كاملة"/>
-    <input name="price" type="number" min="0" step="0.01" placeholder={cfg.priceLabel}/>
-    {cfg.fields.map(f=><label key={f.key}>{f.label}{f.type==="select"?<select name={`attr_${f.key}`} defaultValue=""><option value="">اختر</option>{f.options?.map(o=><option key={o}>{o}</option>)}</select>:<input name={`attr_${f.key}`} type={f.type==="number"?"number":"text"} min={f.type==="number"?0:undefined} placeholder={f.placeholder}/>}</label>)}
-    <input name="phone" required inputMode="tel" minLength={8} placeholder="رقم التواصل"/>
-    <button className="primary" disabled={busy}>{busy?"جارٍ الإرسال...":"إرسال للمراجعة"}</button>
-   </form>{message&&<p className="form-message">{message}</p>}</section>
-   <section className="vertical-results">{filtered.length===0?<div className="empty"><span>{cfg.icon}</span><h3>لا توجد نتائج منشورة</h3><p>جرّب بحثًا آخر أو أضف أول إعلان.</p></div>:filtered.map(x=><article className="vertical-card" key={x.id}><header><span>{cfg.icon}</span><div><small>{x.featured?"مميز · ":""}{x.owner||"عضو ديرب"}</small><h2>{x.title}</h2></div></header><p>{x.description}</p><div className="vertical-tags">{cfg.fields.map(f=>value(x.attributes,f.key)&&<span key={f.key}><small>{f.label}</small><b>{value(x.attributes,f.key)}</b></span>)}</div><footer>{x.price!==null?<strong>{x.price.toLocaleString("ar-EG")} ج</strong>:<strong>السعر حسب الاتفاق</strong>}<a className="primary" href={`tel:${x.phone}`}>تواصل</a></footer></article>)}</section>
-  </div>
- </>;
+ async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setMessage("");const form=e.currentTarget,fd=new FormData(form),attributes=Object.fromEntries(cfg.fields.map(f=>[f.key,String(fd.get(`attr_${f.key}`)??"").trim()]));const payload={kind,title:String(fd.get("title")??""),description:String(fd.get("description")??""),price:String(fd.get("price")??""),phone:String(fd.get("phone")??""),attributes};const r=await fetch("/api/listings",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)}),data=await r.json();setMessage(r.ok?"تم إرسال الإعلان للإدارة للمراجعة.":data.error||"تعذر إرسال الإعلان");if(r.ok)form.reset();setBusy(false)}
+ return <><section className={styles.hero}><span>{cfg.icon}</span><div><small>ديرب أونلاين</small><h1>{cfg.title}</h1><p>{cfg.subtitle}</p></div></section><div className={styles.toolbar}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={`ابحث داخل ${cfg.title}...`}/><b>{filtered.length} إعلان منشور</b></div><div className={`content-split ${styles.layout}`}><section className="social-compose"><h2>أضف إعلانًا جديدًا</h2><p>الإعلان لن يظهر للعامة إلا بعد مراجعة الإدارة.</p><form onSubmit={submit}><input name="title" required minLength={5} maxLength={160} placeholder="عنوان واضح للإعلان"/><textarea name="description" required minLength={10} maxLength={3000} placeholder="اكتب التفاصيل كاملة"/><input name="price" type="number" min="0" step="0.01" placeholder={cfg.priceLabel}/>{cfg.fields.map(f=><label key={f.key}>{f.label}{f.type==="select"?<select name={`attr_${f.key}`} defaultValue=""><option value="">اختر</option>{f.options?.map(o=><option key={o}>{o}</option>)}</select>:<input name={`attr_${f.key}`} type={f.type==="number"?"number":"text"} min={f.type==="number"?0:undefined} placeholder={f.placeholder}/>}</label>)}<input name="phone" required inputMode="tel" minLength={8} placeholder="رقم التواصل"/><button className="primary" disabled={busy}>{busy?"جارٍ الإرسال...":"إرسال للمراجعة"}</button></form>{message&&<p className="form-message">{message}</p>}</section><section className={styles.results}>{filtered.length===0?<div className="empty"><span>{cfg.icon}</span><h3>لا توجد نتائج منشورة</h3><p>جرّب بحثًا آخر أو أضف أول إعلان.</p></div>:filtered.map(x=><article className={styles.card} key={x.id}><header><span>{cfg.icon}</span><div><small>{x.featured?"مميز · ":""}{x.owner||"عضو ديرب"}</small><h2>{x.title}</h2></div></header><p>{x.description}</p><div className={styles.tags}>{cfg.fields.map(f=>value(x.attributes,f.key)&&<span key={f.key}><small>{f.label}</small><b>{value(x.attributes,f.key)}</b></span>)}</div><footer>{x.price!==null?<strong>{x.price.toLocaleString("ar-EG")} ج</strong>:<strong>السعر حسب الاتفاق</strong>}<a className="primary" href={`tel:${x.phone}`}>تواصل</a></footer></article>)}</section></div></>;
 }
