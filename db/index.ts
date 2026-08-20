@@ -1,7 +1,13 @@
-import { env } from "cloudflare:workers";
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
-import * as schema from "./pg-schema";
+import { getNodeDb } from "./node";
 
-let database:ReturnType<typeof drizzle<typeof schema>>|null=null;
-export function getDb(){if(database)return database;const url=(env as unknown as {DATABASE_URL?:string}).DATABASE_URL;if(!url)throw new Error("DATABASE_URL is required by the server runtime");database=drizzle(neon(url),{schema});return database}
+/**
+ * Runtime database entry point.
+ *
+ * Dierb Online now targets a standard server-side PostgreSQL connection for
+ * production (including Vercel/Node). Keeping the application imports behind
+ * this function prevents browser code from ever receiving DATABASE_URL and
+ * avoids coupling runtime data access to Cloudflare/D1/Supabase bindings.
+ */
+export function getDb() {
+  return getNodeDb();
+}
