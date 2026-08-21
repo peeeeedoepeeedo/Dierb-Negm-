@@ -45,7 +45,7 @@ jobs:
       - name: Probe production
         id: probe
         env:
-          BASE_URL: https://dierb-negm.vercel.app
+          BASE_URL: https://dierb-online-preview.peedopeeedo.chatgpt.site
         run: |
           probe() { curl -L -sS -o /dev/null -w '%{http_code}' --max-time 20 "$BASE_URL$1" || echo 000; }
           root=$(probe /)
