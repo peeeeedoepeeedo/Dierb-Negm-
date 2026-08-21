@@ -25,7 +25,8 @@ jobs:
           register=$(probe /register)
           health=$(probe /api/health)
           assetlinks=$(probe /.well-known/assetlinks.json)
-          printf 'sha=%s\nroot=%s\nregister=%s\nhealth=%s\nassetlinks=%s\n' "$GITHUB_SHA" "$root" "$register" "$health" "$assetlinks" > production-probe-result.txt
+          health_body=$(curl -L -sS --max-time 20 "$BASE_URL/api/health" | tr -d '\n' | head -c 500 || true)
+          printf 'sha=%s\nroot=%s\nregister=%s\nhealth=%s\nassetlinks=%s\nhealth_body=%s\n' "$GITHUB_SHA" "$root" "$register" "$health" "$assetlinks" "$health_body" > production-probe-result.txt
       - name: Commit result
         run: |
           git config user.name github-actions[bot]
