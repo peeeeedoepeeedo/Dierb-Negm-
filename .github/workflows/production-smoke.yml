@@ -17,7 +17,7 @@ jobs:
       - name: Probe production routes
         id: probe
         env:
-          BASE_URL: https://dierb-negm.vercel.app
+          BASE_URL: https://dierb-online-preview.peedopeeedo.chatgpt.site
         run: |
           set -u
           probe() {
