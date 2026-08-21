@@ -1,5 +1,6 @@
-sha=5d198ff1aba02f0665b9b784e9e63899b20cf2c6
+sha=fc0c04be1b745b59eccf57ceee4c8ee0d2a62a49
 root=200
 register=200
 health=503
 assetlinks=200
+health_body={"status":"degraded","service":"dierb-online","database":"missing-env","checkedAt":"2026-08-21T22:12:27.940Z"}
