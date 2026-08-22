@@ -1,0 +1,3 @@
+import*as SecureStore from"expo-secure-store";import{DierbApiClient,type TokenPair,type TokenStore}from"@dierb/api-client";import{apiBaseUrl}from"@dierb/config";
+const key="dierb.customer.session.v1";const store:TokenStore={async read(){const value=await SecureStore.getItemAsync(key);return value?JSON.parse(value)as TokenPair:null},async write(value){await SecureStore.setItemAsync(key,JSON.stringify(value),{keychainAccessible:SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY})},async clear(){await SecureStore.deleteItemAsync(key)}};
+export const api=new DierbApiClient(apiBaseUrl(process.env.EXPO_PUBLIC_API_BASE_URL),store);

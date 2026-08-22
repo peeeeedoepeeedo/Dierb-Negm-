@@ -1,0 +1,13 @@
+{
+  "name":"dierb-mobile","private":true,"version":"1.0.0",
+  "workspaces":["apps/*","packages/*"],
+  "scripts":{
+    "typecheck":"npm run typecheck --workspaces --if-present",
+    "start:customer":"npm run start -w @dierb/customer",
+    "start:business":"npm run start -w @dierb/business",
+    "start:admin":"npm run start -w @dierb/admin",
+    "prebuild:customer":"npm run prebuild -w @dierb/customer",
+    "prebuild:business":"npm run prebuild -w @dierb/business",
+    "prebuild:admin":"npm run prebuild -w @dierb/admin"
+  }
+}
