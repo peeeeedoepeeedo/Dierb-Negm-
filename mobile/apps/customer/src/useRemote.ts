@@ -1,0 +1,2 @@
+import{useCallback,useEffect,useState}from"react";
+export function useRemote<T>(load:()=>Promise<T>){const[data,setData]=useState<T|null>(null),[error,setError]=useState(""),[loading,setLoading]=useState(true);const reload=useCallback(async()=>{setLoading(true);setError("");try{setData(await load())}catch(value){setError(value instanceof Error?value.message:"تعذر تحميل البيانات")}finally{setLoading(false)}},[load]);useEffect(()=>{void reload()},[reload]);return{data,error,loading,reload}}

@@ -1,0 +1,1 @@
+{"expo":{"name":"ديرب أدمن","slug":"dierb-admin","scheme":"dierbadmin","version":"1.0.0","orientation":"portrait","userInterfaceStyle":"light","plugins":["expo-router","expo-secure-store"],"android":{"package":"com.dierbonline.admin","versionCode":1,"adaptiveIcon":{"backgroundColor":"#102A36"}},"extra":{"distribution":"internal"}}}

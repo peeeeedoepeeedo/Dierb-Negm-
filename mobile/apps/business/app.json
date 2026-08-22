@@ -1,0 +1,1 @@
+{"expo":{"name":"ديرب بيزنس","slug":"dierb-business","scheme":"dierbbusiness","version":"1.0.0","orientation":"portrait","userInterfaceStyle":"light","plugins":["expo-router","expo-secure-store"],"android":{"package":"com.dierbonline.business","versionCode":1,"adaptiveIcon":{"backgroundColor":"#102A36"}}}}

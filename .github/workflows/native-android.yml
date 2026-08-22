@@ -1,0 +1,46 @@
+name: Native Android
+
+on:
+  push:
+    branches: [feature/native-apps, main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: native-android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  customer-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      EXPO_PUBLIC_API_BASE_URL: https://dierb-online-preview.peedopeeedo.chatgpt.site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+      - name: Typecheck all apps
+        working-directory: mobile
+        run: npm run typecheck
+      - name: Build customer APK
+        working-directory: mobile/apps/customer/android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Upload customer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dierb-online-native-apk
+          if-no-files-found: error
+          path: mobile/apps/customer/android/app/build/outputs/apk/debug/app-debug.apk
