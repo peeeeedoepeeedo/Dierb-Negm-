@@ -35,6 +35,9 @@ jobs:
       - name: Typecheck all apps
         working-directory: mobile
         run: npm run typecheck
+      - name: Generate customer Android project
+        working-directory: mobile/apps/customer
+        run: npx expo prebuild --platform android --no-install
       - name: Build customer APK
         working-directory: mobile/apps/customer/android
         run: ./gradlew assembleDebug --no-daemon
